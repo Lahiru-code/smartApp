@@ -1,0 +1,37 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+  devices      Device[]
+}
+
+model Device {
+  id          String        @id @default(cuid())
+  name        String
+  type        String        // e.g., "temperature", "humidity", "light"
+  userId      String
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime      @default(now())
+  readings    SensorReading[]
+}
+
+model SensorReading {
+  id        String   @id @default(cuid())
+  deviceId  String
+  device    Device   @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  value     Float
+  unit      String   // e.g., "°C", "%", "lux"
+  timestamp DateTime @default(now())
+  
+  @@index([deviceId, timestamp])
+}

@@ -1,0 +1,36 @@
+# Root ignores
+*.log
+.DS_Store
+.vscode/
+.idea/
+.env
+.env.*
+
+# Backend (NestJS/Node)
+backend/node_modules/
+backend/dist/
+backend/coverage/
+backend/.env
+backend/.env.*
+backend/npm-debug.log*
+backend/yarn-error.log*
+
+# Prisma generated client (usually in node_modules)
+# prisma/migrations are committed; no ignore here
+
+# Frontend (Flutter)
+frontend/smartApp/.dart_tool/
+frontend/smartApp/build/
+frontend/smartApp/.flutter-plugins
+frontend/smartApp/.flutter-plugins-dependencies
+frontend/smartApp/ios/Flutter/Flutter.podspec
+frontend/smartApp/ios/Pods/
+frontend/smartApp/android/.gradle/
+frontend/smartApp/android/build/
+frontend/smartApp/linux/build/
+frontend/smartApp/macos/build/
+frontend/smartApp/windows/build/
+frontend/smartApp/web/.dart_tool/
+
+# Platform-specific caches
+.gradle/
