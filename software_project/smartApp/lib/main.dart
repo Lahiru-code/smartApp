@@ -12,6 +12,9 @@ import 'ui/pages/ai_teacher_screen.dart';
 import 'ui/pages/learning_screen.dart';
 import 'ui/pages/progress_screen.dart';
 import 'ui/pages/ai_management_screen.dart';
+import 'ui/pages/analytics_screen.dart';
+import 'ui/pages/schedule_screen.dart';
+
 
 void main() {
   runApp(const MyApp());
@@ -32,18 +35,23 @@ class MyApp extends StatelessWidget {
       ),
       initialRoute: '/login/admin',
       routes: {
-        '/login/admin': (_) => const AdminLoginScreen(),
-        '/login/teacher': (_) => const TeacherLoginScreen(),
-        '/login/student': (_) => const StudentLoginScreen(),
-        '/dashboard': (_) => const DashboardScreen(),
-        '/environmental': (_) => const EnvironmentalScreen(),
-        '/device-control': (_) => const DeviceControlScreen(),
-        '/attendance': (_) => const AttendanceScreen(),
-        '/ai-teacher': (_) => const AiTeacherScreen(),
-        '/learning': (_) => const LearningScreen(),
-        '/progress': (_) => const ProgressScreen(),
-        '/ai-management': (_) => const AiManagementScreen(),
-      },
+  '/login/admin': (_) => const AdminLoginScreen(),
+  '/login/teacher': (_) => const TeacherLoginScreen(),
+  '/login/student': (_) => const StudentLoginScreen(),
+
+  '/dashboard': (_) => const DashboardScreen(),
+  '/environmental': (_) => const EnvironmentalScreen(),
+  '/device-control': (_) => const DeviceControlScreen(),
+  '/attendance': (_) => const AttendanceScreen(),
+  '/analytics': (_) => const AnalyticsScreen(),
+  '/schedule': (_) => const ScheduleScreen(),
+
+  '/ai-teacher': (_) => const AiTeacherScreen(),
+  '/learning': (_) => const LearningScreen(),
+  '/progress': (_) => const ProgressScreen(),
+  '/ai-management': (_) => const AiManagementScreen(),
+},
+
     );
   }
 }

@@ -22,21 +22,24 @@ class ScheduleScreen extends StatelessWidget {
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF2D66F6),
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10)),
-              textStyle:
-                  const TextStyle(fontWeight: FontWeight.w800, fontSize: 12.5),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              textStyle: const TextStyle(fontWeight: FontWeight.w800, fontSize: 12.5),
             ),
           ),
         ),
       ],
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _WeeklyScheduleCard(wide: _wide(context)),
-          const SizedBox(height: 16),
-          const _UpcomingClassesCard(),
-        ],
+
+      // ✅ FIX: make the whole page scrollable
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.only(bottom: 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _WeeklyScheduleCard(wide: _wide(context)),
+            const SizedBox(height: 16),
+            const _UpcomingClassesCard(),
+          ],
+        ),
       ),
     );
   }
@@ -85,19 +88,28 @@ class _WeeklyScheduleCard extends StatelessWidget {
             child: Row(
               children: [
                 const SizedBox(
-                    width: 90,
-                    child: Text('Time',
-                        style: TextStyle(
-                            fontWeight: FontWeight.w900, fontSize: 12))),
-                ...days.map((d) => Expanded(
-                      child: Text(d,
-                          style: const TextStyle(
-                              fontWeight: FontWeight.w900, fontSize: 12)),
-                    )),
+                  width: 90,
+                  child: Text(
+                    'Time',
+                    style: TextStyle(fontWeight: FontWeight.w900, fontSize: 12),
+                  ),
+                ),
+                ...days.map(
+                  (d) => Expanded(
+                    child: Text(
+                      d,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 12),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
           const SizedBox(height: 8),
+
+          // ✅ This is inside a scroll page now, so it's safe.
           SizedBox(
             height: 520,
             child: ListView.builder(
@@ -106,16 +118,18 @@ class _WeeklyScheduleCard extends StatelessWidget {
               itemBuilder: (_, i) {
                 final t = times[i];
                 return Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
                   child: Row(
                     children: [
                       SizedBox(
                         width: 90,
-                        child: Text(t,
-                            style: TextStyle(
-                                color: Colors.black.withOpacity(0.65),
-                                fontWeight: FontWeight.w700)),
+                        child: Text(
+                          t,
+                          style: TextStyle(
+                            color: Colors.black.withOpacity(0.65),
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                       ),
                       for (int d = 0; d < days.length; d++)
                         Expanded(
@@ -136,8 +150,8 @@ class _WeeklyScheduleCard extends StatelessWidget {
   }
 
   Widget _slotCard(String time, int dayIdx) {
-    // Hard-coded demo slots like screenshot
-    final isSlot = (dayIdx == 0 && time == '9:00') ||
+    final isSlot =
+        (dayIdx == 0 && time == '9:00') ||
         (dayIdx == 0 && time == '11:00') ||
         (dayIdx == 0 && time == '14:00');
 
@@ -162,20 +176,29 @@ class _WeeklyScheduleCard extends StatelessWidget {
         color: const Color(0xFFDCEBFF),
         borderRadius: BorderRadius.circular(10),
       ),
+
+      // ✅ FIX: do NOT use Spacer in small fixed-height cards
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style:
-                  const TextStyle(fontWeight: FontWeight.w900, fontSize: 11)),
-          const Spacer(),
-          Text(sub,
-              style: TextStyle(
-                  fontSize: 10.5,
-                  color: Colors.black.withOpacity(0.55),
-                  fontWeight: FontWeight.w700)),
+          Text(
+            title,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 11),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            sub,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 10.5,
+              color: Colors.black.withOpacity(0.55),
+              fontWeight: FontWeight.w700,
+            ),
+          ),
         ],
       ),
     );
@@ -240,9 +263,10 @@ class _CardSection extends StatelessWidget {
         border: Border.all(color: Colors.black.withOpacity(0.05)),
         boxShadow: [
           BoxShadow(
-              blurRadius: 26,
-              offset: const Offset(0, 16),
-              color: Colors.black.withOpacity(0.08)),
+            blurRadius: 26,
+            offset: const Offset(0, 16),
+            color: Colors.black.withOpacity(0.08),
+          ),
         ],
       ),
       child: Column(
@@ -251,9 +275,11 @@ class _CardSection extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                  child: Text(title,
-                      style: const TextStyle(
-                          fontSize: 14.5, fontWeight: FontWeight.w900))),
+                child: Text(
+                  title,
+                  style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w900),
+                ),
+              ),
               if (trailing != null) trailing!,
             ],
           ),
@@ -280,8 +306,7 @@ class _SmallBtn extends StatelessWidget {
           backgroundColor: const Color(0xFFEFF4FF),
           foregroundColor: const Color(0xFF0F172A),
           elevation: 0,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           textStyle: const TextStyle(fontWeight: FontWeight.w800, fontSize: 12),
         ),
         child: Text(label),
@@ -330,18 +355,33 @@ class _UpcomingTile extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title,
-                    style: const TextStyle(fontWeight: FontWeight.w900)),
+                Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontWeight: FontWeight.w900),
+                ),
                 const SizedBox(height: 4),
-                Text('$teacher  •  $room',
-                    style: TextStyle(
-                        fontSize: 11.5,
-                        color: Colors.black.withOpacity(0.55),
-                        fontWeight: FontWeight.w700)),
+                Text(
+                  '$teacher  •  $room',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    color: Colors.black.withOpacity(0.55),
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
                 const SizedBox(height: 4),
-                Text(time,
-                    style: TextStyle(
-                        fontSize: 11.5, color: Colors.black.withOpacity(0.55))),
+                Text(
+                  time,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    color: Colors.black.withOpacity(0.55),
+                  ),
+                ),
               ],
             ),
           ),
@@ -351,11 +391,14 @@ class _UpcomingTile extends StatelessWidget {
               color: const Color(0xFFDDFBE7),
               borderRadius: BorderRadius.circular(999),
             ),
-            child: Text(status,
-                style: const TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w900,
-                    color: Color(0xFF16A34A))),
+            child: Text(
+              status,
+              style: const TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w900,
+                color: Color(0xFF16A34A),
+              ),
+            ),
           ),
         ],
       ),

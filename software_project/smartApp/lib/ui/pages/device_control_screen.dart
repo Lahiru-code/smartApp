@@ -1,6 +1,13 @@
 import 'package:flutter/material.dart';
 import 'app_shell.dart';
 
+import '../../core/network/api_client.dart';
+import '../../features/devices/device_service.dart';
+import '../../features/devices/device_model.dart';
+ 
+
+
+
 class DeviceControlScreen extends StatefulWidget {
   const DeviceControlScreen({super.key});
 
@@ -12,98 +19,217 @@ class _DeviceControlScreenState extends State<DeviceControlScreen> {
   bool _wide(BuildContext c) => MediaQuery.of(c).size.width >= 980;
   bool _mid(BuildContext c) => MediaQuery.of(c).size.width >= 680;
 
-  final List<_DeviceModel> _devices = [
-    _DeviceModel(
-      id: 'main_lights',
-      title: 'Main\nLights',
+  late final ApiClient _api;
+  late final DeviceService _deviceService;
+
+  bool _loading = true;
+  String? _error;
+
+  // Devices from backend
+  List<DeviceModel> _devices = [];
+
+  // UI metadata for cards (icons, slider ranges, power usage, etc.)
+  final Map<String, _DeviceUiMeta> _ui = {
+    'main_lights': _DeviceUiMeta(
       subtitle: 'light',
       icon: Icons.lightbulb_outline,
-      isOn: true,
       hasSlider: true,
       sliderLabel: 'Brightness',
       sliderUnit: '%',
-      sliderValue: 80,
+      sliderMin: 0,
+      sliderMax: 100,
       powerWhenOn: 120,
     ),
-    _DeviceModel(
-      id: 'board_lights',
-      title: 'Board\nLights',
+    'board_lights': _DeviceUiMeta(
       subtitle: 'light',
       icon: Icons.lightbulb_outline,
-      isOn: true,
       hasSlider: true,
       sliderLabel: 'Brightness',
       sliderUnit: '%',
-      sliderValue: 100,
+      sliderMin: 0,
+      sliderMax: 100,
       powerWhenOn: 60,
     ),
-    _DeviceModel(
-      id: 'projector',
-      title: 'Projector',
+    'projector': _DeviceUiMeta(
       subtitle: 'projector',
       icon: Icons.tv_outlined,
-      isOn: false,
       hasSlider: false,
-      powerWhenOn: 0,
+      powerWhenOn: 300,
     ),
-    _DeviceModel(
-      id: 'hvac',
-      title: 'HVAC\nSystem',
+    'hvac': _DeviceUiMeta(
       subtitle: 'hvac',
       icon: Icons.air_outlined,
-      isOn: true,
       hasSlider: true,
       sliderLabel: 'Temperature',
       sliderUnit: '°C',
-      sliderValue: 22,
       sliderMin: 16,
       sliderMax: 30,
       powerWhenOn: 1500,
     ),
-    _DeviceModel(
-      id: 'audio',
-      title: 'Audio\nSystem',
+    'audio': _DeviceUiMeta(
       subtitle: 'audio',
       icon: Icons.volume_up_outlined,
-      isOn: false,
       hasSlider: false,
-      powerWhenOn: 0,
+      powerWhenOn: 250,
     ),
-    _DeviceModel(
-      id: 'emergency_lights',
-      title: 'Emergency\nLights',
+    'emergency_lights': _DeviceUiMeta(
       subtitle: 'light',
       icon: Icons.lightbulb_outline,
-      isOn: true,
       hasSlider: true,
       sliderLabel: 'Brightness',
       sliderUnit: '%',
-      sliderValue: 50,
+      sliderMin: 0,
+      sliderMax: 100,
       powerWhenOn: 40,
     ),
-  ];
+  };
+
+  @override
+  void initState() {
+    super.initState();
+
+    // ✅ Windows desktop
+    _api = ApiClient(baseUrl: 'http://localhost:4000');
+    _deviceService = DeviceService(_api);
+
+    _loadDevices();
+  }
+
+  Future<void> _loadDevices() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+
+    try {
+      final devices = await _deviceService.fetchDevices();
+
+      // If backend doesn't send sliderValue for non-slider devices, keep it null
+      setState(() {
+        _devices = devices;
+        _loading = false;
+      });
+
+      debugPrint('✅ Devices loaded: ${devices.length}');
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+        _loading = false;
+      });
+      debugPrint('❌ Load devices failed: $e');
+    }
+  }
 
   int get _activeCount => _devices.where((d) => d.isOn).length;
 
-  int get _totalPowerW =>
-      _devices.where((d) => d.isOn).fold<int>(0, (sum, d) => sum + d.powerWhenOn);
+  int get _totalPowerW {
+    int sum = 0;
+    for (final d in _devices) {
+      final meta = _ui[d.id];
+      final power = meta?.powerWhenOn ?? 0;
+      if (d.isOn) sum += power;
+    }
+    return sum;
+  }
 
   double get _estimatedCostPerHour {
-    // Example tariff: $0.00012 per Wh (adjust later)
+    // Example tariff: $0.00012 per Wh
     return _totalPowerW * 0.00012;
   }
 
-  void _turnAll(bool on) {
+  Future<void> _turnAll(bool on) async {
+    // optimistic update
     setState(() {
       for (final d in _devices) {
         d.isOn = on;
       }
     });
+
+    // send updates to backend
+    for (final d in _devices) {
+      try {
+        await _deviceService.updateDevice(
+          id: d.id,
+          isOn: d.isOn,
+          sliderValue: d.sliderValue,
+        );
+      } catch (e) {
+        debugPrint('❌ Failed update ${d.id}: $e');
+      }
+    }
+  }
+
+  Future<void> _toggle(DeviceModel d) async {
+    final newValue = !d.isOn;
+
+    // optimistic update
+    setState(() => d.isOn = newValue);
+
+    try {
+      await _deviceService.updateDevice(
+        id: d.id,
+        isOn: d.isOn,
+        sliderValue: d.sliderValue,
+      );
+      debugPrint('✅ Updated ${d.id}: isOn=${d.isOn}');
+    } catch (e) {
+      // revert on error
+      setState(() => d.isOn = !newValue);
+      debugPrint('❌ Toggle failed: $e');
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Update failed: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _setSlider(DeviceModel d, int value) async {
+    // optimistic update
+    setState(() => d.sliderValue = value);
+
+    try {
+      await _deviceService.updateDevice(
+        id: d.id,
+        isOn: d.isOn,
+        sliderValue: d.sliderValue,
+      );
+    } catch (e) {
+      debugPrint('❌ Slider update failed: $e');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final cols = _wide(context) ? 3 : (_mid(context) ? 2 : 1);
+
+    if (_loading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (_error != null) {
+      return Scaffold(
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(18),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('❌ Failed to load devices\n\n$_error'),
+                const SizedBox(height: 12),
+                ElevatedButton(
+                  onPressed: _loadDevices,
+                  child: const Text('Retry'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
 
     return AppShell(
       title: 'Device Control Center',
@@ -116,7 +242,10 @@ class _DeviceControlScreenState extends State<DeviceControlScreen> {
             columns: _wide(context) ? 3 : (_mid(context) ? 2 : 1),
             children: [
               _SummaryCard(title: 'Total Power', value: '$_totalPowerW W'),
-              _SummaryCard(title: 'Active Devices', value: '$_activeCount/${_devices.length}'),
+              _SummaryCard(
+                title: 'Active Devices',
+                value: '$_activeCount/${_devices.length}',
+              ),
               _SummaryCard(
                 title: 'Estimated Cost',
                 value: '\$${_estimatedCostPerHour.toStringAsFixed(2)} /hr',
@@ -140,13 +269,9 @@ class _DeviceControlScreenState extends State<DeviceControlScreen> {
                 onTap: () => _turnAll(false),
               ),
               _ActionButton(
-                label: 'Schedule Automation',
+                label: 'Refresh',
                 color: const Color(0xFF2D66F6),
-                onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Schedule automation (TODO)')),
-                  );
-                },
+                onTap: _loadDevices,
               ),
             ],
           ),
@@ -155,15 +280,26 @@ class _DeviceControlScreenState extends State<DeviceControlScreen> {
 
           _Grid(
             columns: cols,
-            children: _devices
-                .map(
-                  (d) => _DeviceCard(
-                    device: d,
-                    onToggle: () => setState(() => d.isOn = !d.isOn),
-                    onSlider: (v) => setState(() => d.sliderValue = v.round()),
-                  ),
-                )
-                .toList(),
+            children: _devices.map((d) {
+              final meta = _ui[d.id] ??
+                  _DeviceUiMeta(
+                    subtitle: 'device',
+                    icon: Icons.devices_other,
+                    hasSlider: d.sliderValue != null,
+                    sliderLabel: 'Value',
+                    sliderUnit: '',
+                    sliderMin: 0,
+                    sliderMax: 100,
+                    powerWhenOn: 0,
+                  );
+
+              return _DeviceCard(
+                device: d,
+                meta: meta,
+                onToggle: () => _toggle(d),
+                onSlider: (v) => _setSlider(d, v.round()),
+              );
+            }).toList(),
           ),
         ],
       ),
@@ -219,17 +355,23 @@ class _SummaryCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title,
-              style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.black.withOpacity(0.60),
-                  fontWeight: FontWeight.w800)),
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.black.withOpacity(0.60),
+              fontWeight: FontWeight.w800,
+            ),
+          ),
           const Spacer(),
-          Text(value,
-              style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w900,
-                  color: Color(0xFF0F172A))),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.w900,
+              color: Color(0xFF0F172A),
+            ),
+          ),
         ],
       ),
     );
@@ -268,18 +410,23 @@ class _ActionButton extends StatelessWidget {
 class _DeviceCard extends StatelessWidget {
   const _DeviceCard({
     required this.device,
+    required this.meta,
     required this.onToggle,
     required this.onSlider,
   });
 
-  final _DeviceModel device;
+  final DeviceModel device;
+  final _DeviceUiMeta meta;
   final VoidCallback onToggle;
   final ValueChanged<double> onSlider;
 
   @override
   Widget build(BuildContext context) {
     final accent = const Color(0xFF2D66F6);
-    final hasSlider = device.hasSlider;
+    final hasSlider = meta.hasSlider;
+
+    // Ensure sliderValue exists for slider devices
+    final sliderValue = (device.sliderValue ?? meta.sliderMin).clamp(meta.sliderMin, meta.sliderMax);
 
     return Container(
       height: hasSlider ? 220 : 175,
@@ -300,41 +447,46 @@ class _DeviceCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              _IconTile(icon: device.icon),
+              _IconTile(icon: meta.icon),
               const SizedBox(width: 10),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(device.title,
-                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w900)),
+                    Text(
+                      meta.prettyTitle(device.title),
+                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w900),
+                    ),
                     const SizedBox(height: 2),
-                    Text(device.subtitle,
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: Colors.black.withOpacity(0.55),
-                          fontWeight: FontWeight.w700,
-                        )),
+                    Text(
+                      meta.subtitle,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.black.withOpacity(0.55),
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
                   ],
                 ),
               ),
               _PowerButton(isOn: device.isOn, onTap: onToggle, accent: accent),
             ],
           ),
-
           const SizedBox(height: 12),
-
           if (hasSlider) ...[
             Row(
               children: [
-                Text(device.sliderLabel!,
-                    style: TextStyle(
-                        fontSize: 11.5,
-                        color: Colors.black.withOpacity(0.6),
-                        fontWeight: FontWeight.w800)),
+                Text(
+                  meta.sliderLabel ?? 'Value',
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    color: Colors.black.withOpacity(0.6),
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
                 const Spacer(),
                 Text(
-                  '${device.sliderValue}${device.sliderUnit}',
+                  '$sliderValue${meta.sliderUnit}',
                   style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900),
                 ),
               ],
@@ -347,25 +499,27 @@ class _DeviceCard extends StatelessWidget {
                 overlayShape: const RoundSliderOverlayShape(overlayRadius: 14),
               ),
               child: Slider(
-                value: device.sliderValue.toDouble(),
-                min: device.sliderMin.toDouble(),
-                max: device.sliderMax.toDouble(),
+                value: sliderValue.toDouble(),
+                min: meta.sliderMin.toDouble(),
+                max: meta.sliderMax.toDouble(),
                 onChanged: device.isOn ? onSlider : null,
               ),
             ),
             const SizedBox(height: 8),
           ],
-
           Row(
             children: [
-              Text('Power Usage',
-                  style: TextStyle(
-                      fontSize: 11.5,
-                      color: Colors.black.withOpacity(0.6),
-                      fontWeight: FontWeight.w800)),
+              Text(
+                'Power Usage',
+                style: TextStyle(
+                  fontSize: 11.5,
+                  color: Colors.black.withOpacity(0.6),
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
               const Spacer(),
               Text(
-                device.isOn ? '${device.powerWhenOn}W' : '0W',
+                device.isOn ? '${meta.powerWhenOn}W' : '0W',
                 style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900),
               ),
             ],
@@ -395,7 +549,12 @@ class _IconTile extends StatelessWidget {
 }
 
 class _PowerButton extends StatelessWidget {
-  const _PowerButton({required this.isOn, required this.onTap, required this.accent});
+  const _PowerButton({
+    required this.isOn,
+    required this.onTap,
+    required this.accent,
+  });
+
   final bool isOn;
   final VoidCallback onTap;
   final Color accent;
@@ -422,38 +581,34 @@ class _PowerButton extends StatelessWidget {
   }
 }
 
-/* ---------------- model ---------------- */
+/* ---------------- UI meta ---------------- */
 
-class _DeviceModel {
-  _DeviceModel({
-    required this.id,
-    required this.title,
+class _DeviceUiMeta {
+  _DeviceUiMeta({
     required this.subtitle,
     required this.icon,
-    required this.isOn,
     required this.hasSlider,
     required this.powerWhenOn,
     this.sliderLabel,
     this.sliderUnit = '',
-    this.sliderValue = 0,
     this.sliderMin = 0,
     this.sliderMax = 100,
   });
 
-  final String id;
-  final String title;
   final String subtitle;
   final IconData icon;
-
-  bool isOn;
-
   final bool hasSlider;
 
   final int powerWhenOn;
 
   final String? sliderLabel;
   final String sliderUnit;
-  int sliderValue;
   final int sliderMin;
   final int sliderMax;
+
+  // Backend title is "Main Lights" but your UI sometimes wants "Main\nLights"
+  String prettyTitle(String backendTitle) {
+    // keep backend title as-is; you can customize line breaks if you want
+    return backendTitle;
+  }
 }

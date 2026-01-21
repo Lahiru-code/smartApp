@@ -1,6 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
-
+import 'package:flutter/material.dart';
 import 'app_shell.dart';
 
 class EnvironmentalScreen extends StatelessWidget {
@@ -27,19 +26,71 @@ class _EnvironmentalBody extends StatelessWidget {
   Widget build(BuildContext context) {
     final columns = _wide(context) ? 3 : (_mid(context) ? 2 : 1);
 
+    // Example bottom labels for last 20 minutes
+    final bottomLabels = <double, String>{
+      0: '20m',
+      5: '15m',
+      10: '10m',
+      15: '5m',
+      20: 'now',
+    };
+
+    // Example data (replace later with real data)
+    final tempLine = LineChartBarData(
+      isCurved: true,
+      dotData: const FlDotData(show: false),
+      belowBarData: BarAreaData(show: false),
+      barWidth: 2.5,
+      color: const Color(0xFF2D66F6),
+      spots: const [
+        FlSpot(0, 22.5),
+        FlSpot(5, 22.8),
+        FlSpot(10, 23.2),
+        FlSpot(15, 23.7),
+        FlSpot(20, 24.1),
+      ],
+    );
+
+    final humLine = LineChartBarData(
+      isCurved: true,
+      dotData: const FlDotData(show: false),
+      belowBarData: BarAreaData(show: false),
+      barWidth: 2.5,
+      color: const Color(0xFF16A34A),
+      spots: const [
+        FlSpot(0, 52),
+        FlSpot(5, 50),
+        FlSpot(10, 49),
+        FlSpot(15, 48),
+        FlSpot(20, 47),
+      ],
+    );
+
+    final airLine = LineChartBarData(
+      isCurved: true,
+      dotData: const FlDotData(show: false),
+      belowBarData: BarAreaData(show: false),
+      barWidth: 2.5,
+      color: const Color(0xFFF59E0B),
+      spots: const [
+        FlSpot(0, 360),
+        FlSpot(5, 372),
+        FlSpot(10, 385),
+        FlSpot(15, 392),
+        FlSpot(20, 378),
+      ],
+    );
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _Grid(
-          columns: columns,
-          children: const [
-            _MiniMetric(title: 'temperature', value: '22.5', unit: '°C'),
-            _MiniMetric(title: 'humidity', value: '55.6', unit: '%'),
-            _MiniMetric(title: 'air Quality', value: '378.5', unit: 'PPM'),
-            _MiniMetric(title: 'light', value: '351.1', unit: 'Lux'),
-            _MiniMetric(title: 'noise', value: '46.2', unit: 'dB'),
-          ],
-        ),
+        _Grid(columns: columns, children: const [
+          _MiniMetric(title: 'temperature', value: '22.5', unit: '°C'),
+          _MiniMetric(title: 'humidity', value: '55.6', unit: '%'),
+          _MiniMetric(title: 'air Quality', value: '378.5', unit: 'PPM'),
+          _MiniMetric(title: 'light', value: '351.1', unit: 'Lux'),
+          _MiniMetric(title: 'noise', value: '46.2', unit: 'dB'),
+        ]),
         const SizedBox(height: 16),
 
         _CardSection(
@@ -53,136 +104,29 @@ class _EnvironmentalBody extends StatelessWidget {
                 style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800),
               ),
               const SizedBox(height: 10),
-
-              // ✅ Chart 1: Temperature & Humidity
               _LineChartCard(
                 height: 220,
-                minX: 1,
+                lines: [tempLine, humLine],
+                minX: 0,
                 maxX: 20,
-                minY: 10,
-                maxY: 70,
-                bottomLabels: const {
-                  1: '19m ago',
-                  4: '16m ago',
-                  7: '13m ago',
-                  10: '10m ago',
-                  13: '7m ago',
-                  16: '4m ago',
-                  19: '1m ago',
-                },
-                lines: [
-                  LineChartBarData(
-                    isCurved: true,
-                    barWidth: 2.2,
-                    dotData: const FlDotData(show: true),
-                    color: const Color(0xFF2D66F6),
-                    spots: const [
-                      FlSpot(1, 24),
-                      FlSpot(2, 24),
-                      FlSpot(3, 23),
-                      FlSpot(4, 23),
-                      FlSpot(5, 22),
-                      FlSpot(6, 23),
-                      FlSpot(7, 22),
-                      FlSpot(8, 21),
-                      FlSpot(9, 22),
-                      FlSpot(10, 21),
-                      FlSpot(11, 22),
-                      FlSpot(12, 23),
-                      FlSpot(13, 21),
-                      FlSpot(14, 22),
-                      FlSpot(15, 23),
-                      FlSpot(16, 22),
-                      FlSpot(17, 22),
-                      FlSpot(18, 23),
-                      FlSpot(19, 22),
-                      FlSpot(20, 24),
-                    ],
-                  ),
-                  LineChartBarData(
-                    isCurved: true,
-                    barWidth: 2.2,
-                    dotData: const FlDotData(show: true),
-                    color: const Color(0xFF10B981),
-                    spots: const [
-                      FlSpot(1, 50),
-                      FlSpot(2, 48),
-                      FlSpot(3, 52),
-                      FlSpot(4, 49),
-                      FlSpot(5, 60),
-                      FlSpot(6, 45),
-                      FlSpot(7, 54),
-                      FlSpot(8, 46),
-                      FlSpot(9, 47),
-                      FlSpot(10, 45),
-                      FlSpot(11, 61),
-                      FlSpot(12, 53),
-                      FlSpot(13, 56),
-                      FlSpot(14, 59),
-                      FlSpot(15, 52),
-                      FlSpot(16, 46),
-                      FlSpot(17, 54),
-                      FlSpot(18, 45),
-                      FlSpot(19, 54),
-                      FlSpot(20, 47),
-                    ],
-                  ),
-                ],
+                minY: 0,
+                maxY: 100,
+                bottomLabels: bottomLabels,
               ),
-
               const SizedBox(height: 18),
               const Text(
                 'Air Quality',
                 style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800),
               ),
               const SizedBox(height: 10),
-
-              // ✅ Chart 2: Air Quality
               _LineChartCard(
                 height: 220,
-                minX: 1,
+                lines: [airLine],
+                minX: 0,
                 maxX: 20,
-                minY: 0,
-                maxY: 600,
-                bottomLabels: const {
-                  1: '19m ago',
-                  4: '16m ago',
-                  7: '13m ago',
-                  10: '10m ago',
-                  13: '7m ago',
-                  16: '4m ago',
-                  19: '1m ago',
-                },
-                lines: [
-                  LineChartBarData(
-                    isCurved: true,
-                    barWidth: 2.2,
-                    dotData: const FlDotData(show: true),
-                    color: const Color(0xFFF59E0B),
-                    spots: const [
-                      FlSpot(1, 420),
-                      FlSpot(2, 450),
-                      FlSpot(3, 410),
-                      FlSpot(4, 390),
-                      FlSpot(5, 350),
-                      FlSpot(6, 430),
-                      FlSpot(7, 440),
-                      FlSpot(8, 410),
-                      FlSpot(9, 405),
-                      FlSpot(10, 402),
-                      FlSpot(11, 455),
-                      FlSpot(12, 345),
-                      FlSpot(13, 440),
-                      FlSpot(14, 410),
-                      FlSpot(15, 445),
-                      FlSpot(16, 430),
-                      FlSpot(17, 405),
-                      FlSpot(18, 412),
-                      FlSpot(19, 380),
-                      FlSpot(20, 460),
-                    ],
-                  ),
-                ],
+                minY: 300,
+                maxY: 500,
+                bottomLabels: bottomLabels,
               ),
             ],
           ),
@@ -195,19 +139,39 @@ class _EnvironmentalBody extends StatelessWidget {
           child: Column(
             children: [
               const SizedBox(height: 10),
-              const Row(
-                children: [
-                  Expanded(child: _ThresholdItem(label: 'Temperature Warning (°C)', value: '26')),
+              Row(
+                children: const [
+                  Expanded(
+                    child: _ThresholdItem(
+                      label: 'Temperature Warning (°C)',
+                      value: '26',
+                    ),
+                  ),
                   SizedBox(width: 14),
-                  Expanded(child: _ThresholdItem(label: 'Humidity Warning (%)', value: '70')),
+                  Expanded(
+                    child: _ThresholdItem(
+                      label: 'Humidity Warning (%)',
+                      value: '70',
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 14),
-              const Row(
-                children: [
-                  Expanded(child: _ThresholdItem(label: 'Air Quality Warning (PPM)', value: '450')),
+              Row(
+                children: const [
+                  Expanded(
+                    child: _ThresholdItem(
+                      label: 'Air Quality Warning (PPM)',
+                      value: '450',
+                    ),
+                  ),
                   SizedBox(width: 14),
-                  Expanded(child: _ThresholdItem(label: 'Noise Level Warning (dB)', value: '60')),
+                  Expanded(
+                    child: _ThresholdItem(
+                      label: 'Noise Level Warning (dB)',
+                      value: '60',
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 16),
@@ -252,8 +216,14 @@ class _Grid extends StatelessWidget {
   }
 }
 
+/// ✅ FIXED: NO fixed height -> prevents overflow on small tiles
 class _MiniMetric extends StatelessWidget {
-  const _MiniMetric({required this.title, required this.value, required this.unit});
+  const _MiniMetric({
+    required this.title,
+    required this.value,
+    required this.unit,
+  });
+
   final String title;
   final String value;
   final String unit;
@@ -261,7 +231,7 @@ class _MiniMetric extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 110,
+      constraints: const BoxConstraints(minHeight: 92),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -276,10 +246,13 @@ class _MiniMetric extends StatelessWidget {
         ],
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: TextStyle(
               fontSize: 12,
               color: Colors.black.withOpacity(0.6),
@@ -290,12 +263,18 @@ class _MiniMetric extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(
-                value,
-                style: const TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w900,
-                  color: Color(0xFF0F172A),
+              Expanded(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    value,
+                    style: const TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.w900,
+                      color: Color(0xFF0F172A),
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(width: 8),
@@ -312,12 +291,16 @@ class _MiniMetric extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 10),
-          const Row(
-            children: [
+          const SizedBox(height: 8),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: const [
               Icon(Icons.circle, size: 10, color: Colors.green),
               SizedBox(width: 8),
-              Text('normal', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+              Text(
+                'normal',
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+              ),
             ],
           ),
         ],
@@ -351,7 +334,8 @@ class _CardSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w900)),
+          Text(title,
+              style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w900)),
           const SizedBox(height: 10),
           child,
         ],
@@ -360,7 +344,38 @@ class _CardSection extends StatelessWidget {
   }
 }
 
-/// ✅ Real chart widget (no const-double map issue)
+class _ThresholdItem extends StatelessWidget {
+  const _ThresholdItem({required this.label, required this.value});
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF6F9FF),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.black.withOpacity(0.05)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label,
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.black.withOpacity(0.6),
+                fontWeight: FontWeight.w800,
+              )),
+          const SizedBox(height: 10),
+          Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900)),
+        ],
+      ),
+    );
+  }
+}
+
+/// ✅ Real chart widget
 class _LineChartCard extends StatelessWidget {
   const _LineChartCard({
     required this.height,
@@ -376,8 +391,8 @@ class _LineChartCard extends StatelessWidget {
   final List<LineChartBarData> lines;
   final double minX, maxX, minY, maxY;
 
-  /// ✅ Use int keys so const maps work
-  final Map<int, String>? bottomLabels;
+  /// map x value -> label text (example: 19 -> "19m ago")
+  final Map<double, String>? bottomLabels;
 
   @override
   Widget build(BuildContext context) {
@@ -399,7 +414,7 @@ class _LineChartCard extends StatelessWidget {
             show: true,
             drawVerticalLine: true,
             horizontalInterval: (maxY - minY) / 4,
-            verticalInterval: 3,
+            verticalInterval: 5,
             getDrawingHorizontalLine: (value) => FlLine(
               color: Colors.black.withOpacity(0.06),
               strokeWidth: 1,
@@ -414,8 +429,8 @@ class _LineChartCard extends StatelessWidget {
             border: Border(
               left: BorderSide(color: Colors.black.withOpacity(0.12)),
               bottom: BorderSide(color: Colors.black.withOpacity(0.12)),
-              right: BorderSide(color: Colors.transparent),
-              top: BorderSide(color: Colors.transparent),
+              right: const BorderSide(color: Colors.transparent),
+              top: const BorderSide(color: Colors.transparent),
             ),
           ),
           titlesData: FlTitlesData(
@@ -439,9 +454,9 @@ class _LineChartCard extends StatelessWidget {
               sideTitles: SideTitles(
                 showTitles: true,
                 reservedSize: 26,
-                interval: 3,
+                interval: 5,
                 getTitlesWidget: (v, meta) {
-                  final txt = bottomLabels?[v.round()] ?? '';
+                  final txt = bottomLabels?[v] ?? '';
                   return Padding(
                     padding: const EdgeInsets.only(top: 6),
                     child: Text(
@@ -455,39 +470,6 @@ class _LineChartCard extends StatelessWidget {
           ),
           lineBarsData: lines,
         ),
-      ),
-    );
-  }
-}
-
-class _ThresholdItem extends StatelessWidget {
-  const _ThresholdItem({required this.label, required this.value});
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF6F9FF),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.black.withOpacity(0.05)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.black.withOpacity(0.6),
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          const SizedBox(height: 10),
-          Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900)),
-        ],
       ),
     );
   }
