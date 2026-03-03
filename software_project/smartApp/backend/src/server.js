@@ -5,6 +5,7 @@ import helmet from "helmet";
 import dotenv from "dotenv";
 import authRoutes from "./routes/auth.routes.js";
 import deviceRoutes from "./routes/device.routes.js";
+import aiTeacherRouter from "./routes/aiTeacher.js";
 
 
 
@@ -19,7 +20,7 @@ app.use(morgan("dev"));
 app.use("/api/auth", authRoutes);
 app.use("/api/devices", deviceRoutes);
  
-
+app.use("/api/ai", aiTeacherRouter);
 
 app.get("/", (req, res) => {
   res.json({ message: "Smart Classroom API running" });

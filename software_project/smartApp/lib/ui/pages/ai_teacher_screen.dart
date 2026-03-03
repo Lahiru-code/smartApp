@@ -1,5 +1,8 @@
+
+
 import 'package:flutter/material.dart';
 import 'app_shell.dart';
+import 'ai_chat_screen.dart';
 
 class AiTeacherScreen extends StatelessWidget {
   const AiTeacherScreen({super.key});
@@ -25,46 +28,71 @@ class AiTeacherScreen extends StatelessWidget {
           _Grid(
             columns: cols,
             children: [
-              _SubjectCard(
-                title: 'Mathematics',
-                icon: Icons.menu_book_outlined,
-                circleBg: const Color(0xFFDCEBFF),
-                barColor: const Color(0xFF2563EB),
-                levelText: 'Skill Level  7/10',
-                onTap: () => Navigator.pushNamed(context, '/learning'),
-              ),
-              _SubjectCard(
-                title: 'Computer\nScience',
-                icon: Icons.code_rounded,
-                circleBg: const Color(0xFFDDFBE7),
-                barColor: const Color(0xFF16A34A),
-                levelText: 'Skill Level  6/10',
-                onTap: () => Navigator.pushNamed(context, '/learning'),
-              ),
-              _SubjectCard(
-                title: 'Science',
-                icon: Icons.science_outlined,
-                circleBg: const Color(0xFFF1E8FF),
-                barColor: const Color(0xFF7C3AED),
-                levelText: 'Skill Level  5/10',
-                onTap: () => Navigator.pushNamed(context, '/learning'),
-              ),
-              _SubjectCard(
-                title: 'Languages',
-                icon: Icons.public,
-                circleBg: const Color(0xFFFFF0D6),
-                barColor: const Color(0xFFF59E0B),
-                levelText: 'Skill Level  0/10',
-                onTap: () => Navigator.pushNamed(context, '/learning'),
-              ),
-              _SubjectCard(
-                title: 'History',
-                icon: Icons.access_time_rounded,
-                circleBg: const Color(0xFFFFE1E1),
-                barColor: const Color(0xFFEF4444),
-                levelText: 'Skill Level  0/10',
-                onTap: () => Navigator.pushNamed(context, '/learning'),
-              ),
+             _SubjectCard(
+  title: 'Mathematics',
+  icon: Icons.menu_book_outlined,
+  circleBg: const Color(0xFFDCEBFF),
+  barColor: const Color(0xFF2563EB),
+  levelText: 'Skill Level  7/10',
+  onTap: () => Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => const AiChatScreen(subject: "Mathematics"),
+    ),
+  ),
+),
+_SubjectCard(
+  title: 'Computer\nScience',
+  icon: Icons.code_rounded,
+  circleBg: const Color(0xFFDDFBE7),
+  barColor: const Color(0xFF16A34A),
+  levelText: 'Skill Level  6/10',
+  onTap: () => Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => const AiChatScreen(subject: "Computer Science"),
+    ),
+  ),
+),
+_SubjectCard(
+  title: 'Science',
+  icon: Icons.science_outlined,
+  circleBg: const Color(0xFFF1E8FF),
+  barColor: const Color(0xFF7C3AED),
+  levelText: 'Skill Level  5/10',
+  onTap: () => Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => const AiChatScreen(subject: "Science"),
+    ),
+  ),
+),
+_SubjectCard(
+  title: 'Languages',
+  icon: Icons.public,
+  circleBg: const Color(0xFFFFF0D6),
+  barColor: const Color(0xFFF59E0B),
+  levelText: 'Skill Level  0/10',
+  onTap: () => Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => const AiChatScreen(subject: "Languages"),
+    ),
+  ),
+),
+_SubjectCard(
+  title: 'History',
+  icon: Icons.access_time_rounded,
+  circleBg: const Color(0xFFFFE1E1),
+  barColor: const Color(0xFFEF4444),
+  levelText: 'Skill Level  0/10',
+  onTap: () => Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => const AiChatScreen(subject: "History"),
+    ),
+  ),
+),
             ],
           ),
           const SizedBox(height: 16),
