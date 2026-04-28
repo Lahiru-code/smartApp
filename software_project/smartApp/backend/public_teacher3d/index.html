@@ -3,22 +3,24 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>3D Teacher</title>
   </head>
   <body style="margin:0; overflow:hidden; background:#111;">
     <div id="hint" style="position:fixed;top:10px;left:10px;color:white;z-index:10">
       Loading 3D teacher...
     </div>
+
     <canvas id="c"></canvas>
 
     <script type="importmap">
     {
       "imports": {
-        "three": "/three/build/three.module.js",
-        "three/addons/": "/three/examples/jsm/"
+        "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
       }
     }
     </script>
 
-    <script type="module" src="./main.js"></script>
+    <script type="module" src="./main.js?v=3"></script>
   </body>
 </html>
