@@ -7,7 +7,8 @@ import 'ui/login/student_login_screen.dart';
 import 'ui/pages/dashboard_screen.dart';
 import 'ui/pages/environmental_screen.dart';
 import 'ui/pages/device_control_screen.dart';
-import 'ui/pages/attendance_screen.dart';
+import 'ui/pages/analytics_screen.dart';
+import 'ui/pages/schedule_screen.dart';
 import 'ui/pages/ai_teacher_screen.dart';
 import 'ui/pages/learning_screen.dart';
 import 'ui/pages/progress_screen.dart';
@@ -38,7 +39,8 @@ class MyApp extends StatelessWidget {
         '/dashboard': (_) => const DashboardScreen(),
         '/environmental': (_) => const EnvironmentalScreen(),
         '/device-control': (_) => const DeviceControlScreen(),
-        '/attendance': (_) => const AttendanceScreen(),
+        '/analytics': (_) => const AnalyticsScreen(),
+        '/schedule': (_) => const ScheduleScreen(),
         '/ai-teacher': (_) => const AiTeacherScreen(),
         '/learning': (_) => const LearningScreen(),
         '/progress': (_) => const ProgressScreen(),

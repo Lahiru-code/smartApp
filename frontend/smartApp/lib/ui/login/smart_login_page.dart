@@ -36,9 +36,8 @@ class SmartLoginPage extends StatefulWidget {
 
   final UserRole role;
   final Future<void> Function(String email, String password, UserRole role)?
-  onSignIn;
+      onSignIn;
   final void Function(UserRole role)? onQuickRoleTap;
-    
 
   @override
   State<SmartLoginPage> createState() => _SmartLoginPageState();
@@ -104,92 +103,94 @@ class _SmartLoginPageState extends State<SmartLoginPage> {
         width: double.infinity,
         height: double.infinity,
         decoration: const BoxDecoration(
-          gradient: RadialGradient(
-            center: Alignment(-0.6, -0.8),
-            radius: 1.3,
-            colors: [Color(0xFFF4FAFF), Color(0xFFEFF6FF), Color(0xFFF7FBFF)],
+          gradient: LinearGradient(
+            colors: [Color(0xFFEEF3FF), Color(0xFFF2FAFF), Color(0xFFFFF6EC)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
         ),
         child: SafeArea(
           child: Center(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
               child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 460),
+                constraints: const BoxConstraints(maxWidth: 420),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Logo box
+                    // Logo
                     Container(
-                      width: 54,
-                      height: 54,
+                      width: 60,
+                      height: 60,
                       decoration: BoxDecoration(
                         color: primaryBlue,
-                        borderRadius: BorderRadius.circular(14),
-                        boxShadow: [
-                          BoxShadow(
-                            blurRadius: 18,
-                            offset: const Offset(0, 10),
-                            color: Colors.black.withOpacity(0.12),
-                          ),
-                        ],
+                        borderRadius: BorderRadius.circular(16),
                       ),
                       child: const Icon(
-                        Icons.lightbulb_outline,
+                        Icons.school_outlined,
                         color: Colors.white,
-                        size: 26,
+                        size: 32,
                       ),
                     ),
-                    const SizedBox(height: 18),
+                    const SizedBox(height: 24),
 
-                    // Title / subtitle
+                    // Welcome text
                     const Text(
-                      'Smart Classroom IoT',
+                      'Welcome Back',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w700,
+                        fontSize: 28,
+                        fontWeight: FontWeight.w800,
                         color: Color(0xFF0F172A),
                       ),
                     ),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 8),
                     Text(
-                      'Intelligent classroom management system',
+                      'Sign in to access your classroom management dashboard',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: 12.5,
+                        fontSize: 14,
                         fontWeight: FontWeight.w400,
-                        color: Colors.black.withOpacity(0.55),
+                        color: Colors.black.withOpacity(0.6),
                       ),
                     ),
-                    const SizedBox(height: 26),
+                    const SizedBox(height: 32),
 
-                    // Card
+                    // Login form
                     Container(
-                      padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
+                      padding: const EdgeInsets.all(24),
                       decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(14),
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFFFFFFF), Color(0xFFF8FBFF)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: const Color(0xFF2D66F6).withOpacity(0.12),
+                        ),
                         boxShadow: [
                           BoxShadow(
-                            blurRadius: 26,
-                            offset: const Offset(0, 14),
-                            color: Colors.black.withOpacity(0.12),
+                            color: const Color(0xFF2D66F6).withOpacity(0.08),
+                            blurRadius: 24,
+                            offset: const Offset(0, 10),
                           ),
                         ],
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          // Email field
                           const _FieldLabel('Email Address'),
                           const SizedBox(height: 8),
                           _AppTextField(
                             controller: _email,
-                            hintText: 'Enter your email',
+                            hintText: 'your.email@school.com',
                             keyboardType: TextInputType.emailAddress,
                           ),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 20),
 
+                          // Password field
                           const _FieldLabel('Password'),
                           const SizedBox(height: 8),
                           _AppTextField(
@@ -201,90 +202,107 @@ class _SmartLoginPageState extends State<SmartLoginPage> {
                                   setState(() => _obscure = !_obscure),
                               icon: Icon(
                                 _obscure
-                                    ? Icons.visibility_off
-                                    : Icons.visibility,
+                                    ? Icons.visibility_off_outlined
+                                    : Icons.visibility_outlined,
+                                size: 20,
                               ),
-                              color: Colors.black.withOpacity(0.45),
+                              color: Colors.black.withOpacity(0.4),
                             ),
                           ),
-                          const SizedBox(height: 18),
+                          const SizedBox(height: 24),
 
+                          // Sign in button
                           SizedBox(
                             width: double.infinity,
-                            height: 46,
-                            child: ElevatedButton.icon(
+                            height: 48,
+                            child: ElevatedButton(
                               onPressed: _loading ? null : _handleSignIn,
-                              icon: const Icon(
-                                Icons.verified_user_outlined,
-                                size: 18,
-                              ),
-                              label: Text(
-                                _loading ? 'Signing In...' : 'Sign In',
-                              ),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: primaryBlue,
                                 foregroundColor: Colors.white,
                                 elevation: 0,
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
                                 textStyle: const TextStyle(
-                                  fontSize: 13.5,
-                                  fontWeight: FontWeight.w600,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
                                 ),
+                              ),
+                              child: Text(
+                                _loading ? 'Signing in...' : 'Sign In',
                               ),
                             ),
-                          ),
-
-                          const SizedBox(height: 18),
-                          Text(
-                            'Quick Login:',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.black.withOpacity(0.55),
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-
-                          Row(
-                            children: [
-                              Expanded(
-                                child: _QuickRoleButton(
-                                  text: 'Admin',
-                                  selected: widget.role == UserRole.admin,
-                                  onTap: () => widget.onQuickRoleTap?.call(
-                                    UserRole.admin,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: _QuickRoleButton(
-                                  text: 'Teacher',
-                                  selected: widget.role == UserRole.teacher,
-                                  onTap: () => widget.onQuickRoleTap?.call(
-                                    UserRole.teacher,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: _QuickRoleButton(
-                                  text: 'Student',
-                                  selected: widget.role == UserRole.student,
-                                  onTap: () => widget.onQuickRoleTap?.call(
-                                    UserRole.student,
-                                  ),
-                                ),
-                              ),
-                            ],
                           ),
                         ],
                       ),
                     ),
 
-                    const SizedBox(height: 22),
+                    const SizedBox(height: 28),
+
+                    // Quick login options
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Quick Access',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.black.withOpacity(0.7),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _QuickRoleButton(
+                                text: 'Admin',
+                                icon: Icons.admin_panel_settings_outlined,
+                                selected: widget.role == UserRole.admin,
+                                onTap: () => widget.onQuickRoleTap?.call(
+                                  UserRole.admin,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: _QuickRoleButton(
+                                text: 'Teacher',
+                                icon: Icons.person_outline,
+                                selected: widget.role == UserRole.teacher,
+                                onTap: () => widget.onQuickRoleTap?.call(
+                                  UserRole.teacher,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: _QuickRoleButton(
+                                text: 'Student',
+                                icon: Icons.school_outlined,
+                                selected: widget.role == UserRole.student,
+                                onTap: () => widget.onQuickRoleTap?.call(
+                                  UserRole.student,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Footer
+                    Text(
+                      '© 2024 Smart Classroom IoT. All rights reserved.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.black.withOpacity(0.4),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -363,36 +381,67 @@ class _AppTextField extends StatelessWidget {
 class _QuickRoleButton extends StatelessWidget {
   const _QuickRoleButton({
     required this.text,
+    required this.icon,
     required this.onTap,
     required this.selected,
   });
 
   final String text;
+  final IconData icon;
   final VoidCallback? onTap;
   final bool selected;
 
+  Color _roleColor() {
+    switch (text) {
+      case 'Admin':
+        return const Color(0xFF2D66F6);
+      case 'Teacher':
+        return const Color(0xFF0EA5E9);
+      default:
+        return const Color(0xFFF97316);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 34,
-      child: Material(
-        color: selected ? const Color(0xFFEAF1FF) : const Color(0xFFF3F6FA),
-        borderRadius: BorderRadius.circular(8),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(8),
-          onTap: onTap,
-          child: Center(
-            child: Text(
+    final roleColor = _roleColor();
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: 48,
+        decoration: BoxDecoration(
+          gradient: selected
+              ? LinearGradient(
+                  colors: [roleColor, roleColor.withOpacity(0.78)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                )
+              : null,
+          color: selected ? null : Colors.white,
+          border: Border.all(
+            color: selected ? roleColor : roleColor.withOpacity(0.35),
+          ),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              size: 20,
+              color: selected ? Colors.white : roleColor,
+            ),
+            const SizedBox(height: 4),
+            Text(
               text,
               style: TextStyle(
                 fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: selected
-                    ? const Color(0xFF2D66F6)
-                    : Colors.black.withOpacity(0.7),
+                fontWeight: FontWeight.w700,
+                color: selected ? Colors.white : roleColor,
               ),
             ),
-          ),
+          ],
         ),
       ),
     );
