@@ -178,7 +178,7 @@ window.addEventListener("resize", () => {
 });
 
 */
-
+/*
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
@@ -269,4 +269,209 @@ window.addEventListener("resize", () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
+});
+*/
+import * as THREE from "three";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+
+const hint = document.getElementById("hint");
+const canvas = document.getElementById("c");
+const answerBox = document.getElementById("answerBox"); // ✅ FIX
+
+let isSpeaking = false;
+let teacherModel = null;
+let mouthMesh = null;
+let headBone = null;
+let neckBone = null;
+
+// Renderer
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+
+// Scene
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x111111);
+
+// Camera
+const camera = new THREE.PerspectiveCamera(
+  45,
+  window.innerWidth / window.innerHeight,
+  0.1,
+  1000
+);
+camera.position.set(0, 2, 6);
+
+// Controls
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+
+// Lights
+scene.add(new THREE.AmbientLight(0xffffff, 2));
+
+const light = new THREE.DirectionalLight(0xffffff, 2);
+light.position.set(5, 10, 5);
+scene.add(light);
+
+// Load model
+const loader = new GLTFLoader();
+
+loader.load(
+  "./teacher.glb",
+  (gltf) => {
+    const teacher = gltf.scene;
+    teacherModel = teacher; // ✅ store model
+
+    teacher.traverse((child) => {
+
+      if (child.name === "mixamorigHead_06") headBone = child;
+if (child.name === "mixamorigNeck_05") neckBone = child;
+
+
+  console.log(child.name, child);
+
+  if (
+    child.isMesh &&
+    child.morphTargetDictionary &&
+    (
+      child.morphTargetDictionary["mouthOpen"] !== undefined ||
+      child.morphTargetDictionary["jawOpen"] !== undefined ||
+      child.morphTargetDictionary["viseme_aa"] !== undefined
+    )
+  ) {
+    mouthMesh = child;
+    console.log("Mouth mesh found:", child.name);
+  }
+});
+
+    scene.add(teacher);
+
+    teacher.position.set(0, 0, 0);
+    teacher.scale.set(1, 1, 1);
+
+    controls.target.set(0, 1, 0);
+    controls.update();
+
+    hint.textContent = "3D Teacher loaded ✅";
+  },
+  (xhr) => {
+    hint.textContent = "Loading 3D teacher...";
+  },
+  (error) => {
+    console.error(error);
+    hint.textContent = "Failed to load ❌";
+  }
+);
+
+// Animation loop
+function animate() {
+  requestAnimationFrame(animate);
+
+  // ✅ speaking animation
+  if (teacherModel && isSpeaking) {
+    teacherModel.rotation.y = Math.sin(Date.now() * 0.005) * 0.05;
+  }
+
+  controls.update();
+  renderer.render(scene, camera);
+
+  if (mouthMesh && isSpeaking) {
+  const dict = mouthMesh.morphTargetDictionary;
+  const key =
+    dict["mouthOpen"] !== undefined ? "mouthOpen" :
+    dict["jawOpen"] !== undefined ? "jawOpen" :
+    dict["viseme_aa"] !== undefined ? "viseme_aa" :
+    null;
+
+  if (key) {
+    const index = dict[key];
+    mouthMesh.morphTargetInfluences[index] =
+      (Math.sin(Date.now() * 0.03) + 1) / 2;
+  }
+}
+
+if (mouthMesh && !isSpeaking) {
+  mouthMesh.morphTargetInfluences.fill(0);
+}
+
+if (isSpeaking) {
+  const t = Date.now() * 0.006;
+
+  if (headBone) {
+    headBone.rotation.y = Math.sin(t) * 0.12;
+    headBone.rotation.x = Math.sin(t * 1.7) * 0.04;
+  }
+
+  if (neckBone) {
+    neckBone.rotation.y = Math.sin(t * 0.8) * 0.06;
+  }
+} else {
+  if (headBone) {
+    headBone.rotation.y = 0;
+    headBone.rotation.x = 0;
+  }
+
+  if (neckBone) {
+    neckBone.rotation.y = 0;
+  }
+}
+
+
+}
+animate();
+
+// Resize
+window.addEventListener("resize", () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+// ================= AI PART =================
+
+async function askTeacher() {
+  const input = document.getElementById("question");
+  const question = input.value.trim();
+
+  if (!question) return;
+
+  hint.textContent = "Teacher thinking...";
+
+  const response = await fetch("http://localhost:11434/api/generate", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: "gemma3:4b",
+      prompt: `You are a classroom teacher. Answer briefly in simple words (max 3 paragraphs): ${question}`,
+      stream: false,
+    }),
+  });
+
+  const data = await response.json();
+  const answer = data.response;
+
+  answerBox.textContent = answer; // ✅ correct usage
+  hint.textContent = "3D Teacher ready";
+
+  speak(answer);
+}
+
+// Speech
+function speak(text) {
+  const utterance = new SpeechSynthesisUtterance(text);
+
+  utterance.onstart = () => (isSpeaking = true);
+  utterance.onend = () => (isSpeaking = false);
+
+  speechSynthesis.cancel();
+  speechSynthesis.speak(utterance);
+}
+
+// Events
+document.getElementById("askBtn").addEventListener("click", askTeacher);
+
+document.getElementById("question").addEventListener("keydown", (e) => {
+  if (e.key === "Enter") askTeacher();
 });
